@@ -71,11 +71,9 @@ let make = () => {
   //   self.onUnmount(() => ReasonReactRouter.unwatchUrl(watcherId));
   // },
 
-  let watcherId = ReasonReactRouter.watchUrl(url=>setRoute(route => url |> mapUrlToRoute));
-
-  // let url = ReasonReactRouter.useUrl();
-  // setRoute(url |> mapUrlToRoute);
   React.useEffect(() => {
+    let watcherId = ReasonReactRouter.watchUrl(url=>setRoute(route => url |> mapUrlToRoute));
+
     Some(() => {
       Js.log("apply Effect");
       ReasonReactRouter.unwatchUrl(watcherId);

@@ -1,0 +1,37 @@
+{
+  "name": "reason-react-hooks",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack -w",
+    "webpack:production": "NODE_ENV=production webpack",
+    "server": "webpack-dev-server"
+  },
+  "keywords": [
+    "BuckleScript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@y0c/react-datepicker": "^0.3.7",
+    "@glennsl/bs-json": "^3.0.0",
+    "bs-css": "^8.0.0",
+    "bs-fetch": "^0.3.1",
+    "bs-reform": "^5.1.1-beta.3",
+    "re-classnames": "^3.0.0",
+    "re-formality": "^2.0.0",
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "reason-react": ">=0.7.0"
+  },
+  "devDependencies": {
+    "bs-platform": "^5.0.2",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.0.1",
+    "webpack-cli": "^3.1.1",
+    "webpack-dev-server": "^3.1.8"
+  }
+}

@@ -1,4 +1,3 @@
-[@bs.config {jsx: 3}];
 
 let handleClick = (href, event) =>
   if (! ReactEvent.Mouse.defaultPrevented(event)) {

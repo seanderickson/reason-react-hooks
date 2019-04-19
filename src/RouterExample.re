@@ -1,9 +1,9 @@
 open Common;
 
-type action = 
-  | ChangeRoute(route)
-  | UpdateProjectForm(projectState)
-  | UpdateMsForm(microscopeState)
+// type action = 
+//   | ChangeRoute(route)
+//   | UpdateProjectForm(projectState)
+//   | UpdateMsForm(microscope)
 
 // TODO: Initial States come from the server
 
@@ -25,13 +25,8 @@ let initialProjectState: projectState = {
   comments: "Test comment here..."
 };
 
-let initialMsState = {
-  name: "MS1",
-  channels: "4",
-  magnification: "20x"
-};
-
-// let component = ReasonReact.reducerComponent("RouterApp");
+module BMS = Belt.Map.String;
+let initialMsState = BMS.getExn(microscopeMap, "MS1");
 
 let mapUrlToRoute = (url: ReasonReact.Router.url) => 
   switch(url.path) {
@@ -44,35 +39,13 @@ let mapUrlToRoute = (url: ReasonReact.Router.url) =>
 
 [@react.component]
 let make = () => {
-  // ...component,
-  // initialState: () => { 
-  //   route: mapUrlToRoute(ReasonReact.Router.dangerouslyGetInitialUrl()), 
-  //   projectState: initialProjectState, 
-  //   microscopeState: initialMsState 
-  //   },
 
   let (route, setRoute) = React.useState(()=>mapUrlToRoute(ReasonReactRouter.dangerouslyGetInitialUrl()));
   let (projectState, setProjectState) = React.useState(()=>initialProjectState);
   let (msState, setMsState) = React.useState(()=>initialMsState);
-
-  // let (state, dispatch) = React.useReducer(
-  //   (state, action) =>
-  //     switch (action) {
-  //     | ChangeRoute(route) =>  ReasonReact.Update({ ...state, route: route })
-  //     | UpdateProjectForm(newState) => ReasonReact.Update({ ...state, projectState: newState })
-  //     | UpdateMsForm(newState) => ReasonReact.Update({...state, microscopeState: newState})
-  //     },
-  //   {count: 0}
-  // );
-
-  // didMount: (self) => {
-  //   let watcherId = ReasonReactRouter.watchUrl(
-  //     url=>self.send(ChangeRoute(url |> mapUrlToRoute)));
-  //   self.onUnmount(() => ReasonReactRouter.unwatchUrl(watcherId));
-  // },
-
+  
   React.useEffect(() => {
-    let watcherId = ReasonReactRouter.watchUrl(url=>setRoute(route => url |> mapUrlToRoute));
+    let watcherId = ReasonReactRouter.watchUrl(url=>setRoute( _ => url |> mapUrlToRoute));
 
     Some(() => {
       Js.log("apply Effect");

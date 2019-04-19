@@ -17,12 +17,6 @@ type formField =
   | Cycles
   | Comments;
 
-type action =
-  | UpdateValue(formField, string);
-
-
-// let component = ReasonReact.reducerComponent("ProjectForm");
-
 let getValue = event => ReactEvent.Form.target(event)##value;
 
 // let errors: Hashtbl.t(formField,string) = Hashtbl.create(20);
@@ -71,10 +65,10 @@ let make = (~initialState: projectState, ~handleSubmit)=> {
   let formSubmit = (event) => {
     Js.log2("formSubmit...", state);
     ReactEvent.Form.preventDefault(event);
-    handleSubmit(xstate=>state);
+    handleSubmit(_=>state);
   };
 
-  <form className="form" onSubmit=(e=>formSubmit(e)) >
+  <form className="data_list_form" onSubmit=(e=>formSubmit(e)) >
     <label htmlFor="name">(str("Name"))</label>
     <input id="name" value={state.projectName} required=true
       onChange=updateValue(ProjectName)

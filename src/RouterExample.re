@@ -37,13 +37,85 @@ let mapUrlToRoute = (url: ReasonReact.Router.url) =>
     | _ => Project
   };
 
+
 [@react.component]
 let make = () => {
 
-  let (route, setRoute) = React.useState(()=>mapUrlToRoute(ReasonReactRouter.dangerouslyGetInitialUrl()));
-  let (projectState, setProjectState) = React.useState(()=>initialProjectState);
-  let (msState, setMsState) = React.useState(()=>initialMsState);
+  let (route, setRoute) = React.useState(
+    ()=>mapUrlToRoute(ReasonReactRouter.dangerouslyGetInitialUrl()));
   
+  let (projectState, setProjectState) = React.useState(
+    ()=>initialProjectState);
+  
+  let (msState, setMsState) = React.useState(
+    ()=>initialMsState);
+
+  let (modalState, setModalState) = React.useState(()=>{
+      callBackOk: (message) => {Js.log(message);},
+      callBackCancel: (message) => {Js.log(message);},
+      shown: false,
+      message: "",
+    });
+
+  let showModalMessage = (message, ~shown, ~callBackOk, ~callBackCancel)  => {
+
+    let finalCancel = (message) => {
+      setModalState(_=>{...modalState, shown: false});
+      Js.log("parent cancel...");
+      callBackCancel(message);
+    };
+    let finalOk = (message) => {
+      setModalState(_=>{...modalState, shown: false});
+      Js.log("parent ok...");
+      callBackOk(message);
+    };
+
+    setModalState(_=>{
+      message: message,
+      shown: shown,
+      callBackCancel: finalCancel,
+      callBackOk: finalOk
+    });
+
+  };
+
+  let toggleModal = event => {
+    // This is an example only!
+    ReactEvent.Synthetic.preventDefault(event);
+    showModalMessage(
+      "Test",
+      ~shown=!modalState.shown,
+      ~callBackOk=(msg)=>{
+        Js.log2("Callback ok: ", msg);
+      }, 
+      ~callBackCancel=(msg)=>{
+        Js.log2("Callback cancel:", msg);
+        setModalState(_=>{...modalState, shown: false});
+      }
+    );
+  };
+
+  let handleMsUpdate = (newMsState) => {
+    setMsState(_=>newMsState);
+
+    // showModalMessage(
+    //   "Really update?",
+    //   ~shown=true,
+    //   ~callBackCancel=(message) => {
+    //     Js.log2("Cancel...", message);
+    //     // NOTE: this won't work, because react will bail out of the re-render
+    //     // if the state has not changed.
+    //     // setMsState(_=>msState)
+    //     setModalState(_=>{...modalState, shown: false});
+    //   },
+    //   ~callBackOk=(message) => {
+    //     Js.log(message);
+    //     setMsState(_=>newMsState);
+    //     setModalState(_=>{...modalState, shown: false});
+    //   }
+    // );
+  };
+
   React.useEffect(() => {
     let watcherId = ReasonReactRouter.watchUrl(url=>setRoute( _ => url |> mapUrlToRoute));
 
@@ -56,13 +128,23 @@ let make = () => {
 
   <div >
     <div>(str("Project Name: " ++ projectState.projectName))</div>
+    <Modal 
+      callBackOk=modalState.callBackOk
+      callBackCancel=modalState.callBackCancel
+      customClass="foo" 
+      show=modalState.shown >
+      (str(modalState.message))
+    </Modal>
     <div className="wrapper">
+    <div>
     <ul>
       <li><Link href="project" selected=((route == Project)) >(str("project"))</Link></li>
       <li><Link href="microscope" selected=((route == Microscope)) >(str("microscope"))</Link></li>
       // <li><Link href="planned" selected=((self.state.route == Planned)) >(str("planned"))</Link></li>
       // <li><Link href="actual" selected=((self.state.route == Actual)) >(str("actual"))</Link></li>
     </ul>
+    <button onClick=(toggleModal) > (str(modalState.shown ? "hide": "show modal")) </button>
+    </div>
     (
       {
         switch(route) {
@@ -73,9 +155,10 @@ let make = () => {
               initialState=projectState />
           | Microscope => 
             <MicroscopeForm 
-              handleSubmit=setMsState
+              handleSubmit=handleMsUpdate
               key="ms_form"
-              initialState=msState />
+              initialState=msState
+              showModalMessage />
           // | Planned =>
           //   <SimpleForm 
           //     handleSubmit

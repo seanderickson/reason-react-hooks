@@ -44,6 +44,14 @@ type route =
 //   channels
 // };
 
+type modalState = {
+  shown: bool,
+  message: string,
+  callBackOk: (string)=>unit,
+  callBackCancel: (string)=>unit
+};
+
+
 // Create some microscopes (TODO: get from API)
 let storedMicroscopes = [
   { 
@@ -64,6 +72,7 @@ let storedMicroscopes = [
       { ordinal: 2, filter: "DEF"},
       { ordinal: 3, filter: "CY1"},
       { ordinal: 4, filter: "CY2"},
+      { ordinal: 5, filter: "CY3"},
     ]
   },
   { 
@@ -74,6 +83,8 @@ let storedMicroscopes = [
       { ordinal: 2, filter: "DAPI"},
       { ordinal: 3, filter: "CY2"},
       { ordinal: 4, filter: "CY4"},
+      { ordinal: 5, filter: "FIT1"},
+      { ordinal: 6, filter: "FIT2"},
     ]
   },
   { 
@@ -84,6 +95,10 @@ let storedMicroscopes = [
       { ordinal: 2, filter: "JKLM"},
       { ordinal: 3, filter: "CY5"},
       { ordinal: 4, filter: "CY6"},
+      { ordinal: 5, filter: "CY7"},
+      { ordinal: 6, filter: "CY8"},
+      { ordinal: 7, filter: "CY9"},
+      { ordinal: 8, filter: "FIT1"},
     ]
   },
 ];

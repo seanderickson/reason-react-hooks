@@ -13,84 +13,91 @@ let getValue = event => ReactEvent.Form.target(event)##value;
 //   (`channels, s=> s.channels, (s, channels) => {...s, channels})
 // ];
 
-
 [@react.component]
-let make = (~initialState: microscope, ~handleSubmit )=> {
+let make = (~initialState: microscope, ~handleSubmit, ~showModalMessage )=>{
 
   let (msState, setState) = React.useState(()=>initialState);
+  let (originalState, setOriginalState) = React.useState(_=>initialState);
   let (channelCount, setChannelCount) = React.useState(()=>List.length(msState.channels));
 
-  /**
-    Add or remove channels based on the Microscope Form input field.
-    
-    NOTE: return the new state so that it may be submitted to the parent.
-   */
-  let updateChannelCount = newCount => {
+  let updateChannels = (newCount, channels) => {
 
-    let currLen = List.length(msState.channels);
+    let currLen = List.length(channels);
     if (newCount < currLen) {
-      let newState = { 
-        ...msState, 
-        channels: msState.channels 
-          |> ListLabels.fold_left(
-            ~f=(newList,channel) => 
-              List.length(newList) < newCount ? newList @ [channel] : newList, 
-            ~init=[])
-      };  
-      setState(_=>newState);
-      newState;
+        channels
+          |> ListLabels.fold_left( 
+            ~f=(newList,channel) =>
+              List.length(newList) < newCount ? newList @ [channel] : newList,
+            ~init=[]);
     } else if (newCount > currLen) {
+      
+      // Create a larger list and populate it
 
-      let maxOrdinal = msState.channels 
-        |> List.fold_left(
+      let maxOrdinal = channels |> List.fold_left(
           (max,channel) => channel.ordinal>max ? channel.ordinal : max, 0);
-
-      // // Method 1: using mutable reference
-      // let channels = ref(msState.channels);
-      // for (i in currLen+1 to newCount){
-      //   channels := List.append(
-      //     channels^, [{ ordinal: i, filter: "Test-" ++ string_of_int(i)}]);
-      // }
-      // let newState = {...msState, channels: channels^  };
-      // setState(_=>newState);
-      // newState;
-
-      // Method 2: create a new array of the correct size and fill it
-      // then convert back to a list.
-      let newChannels = Array.make(newCount, {ordinal:0, filter:"x"});
-
-      // Copy over the old channels
-      msState.channels 
-        |> List.iteri((i,channel)=>newChannels[i]=channel);
-
+      let newChannels = Array.make(newCount, {ordinal:0, filter:""});
+      channels |> List.iteri(
+        (i,channel)=>newChannels[i]=channel );
+      
       // Add the extra channels
-      for (i in currLen to newCount-1){
-        let newOrdinal = i-currLen + maxOrdinal + 1;
-        newChannels[i] = { 
-          ordinal: newOrdinal, 
-          filter: "Test-" ++ string_of_int(newOrdinal)
+      
+      for (i in 0 to newCount-currLen-1){
+        let newOrdinal = maxOrdinal + 1 + i;
+        newChannels[currLen+i] = {
+          ordinal: newOrdinal,
+          filter: "Filter-" ++ string_of_int(newOrdinal)
         };
       }
-
-      let newState = {...msState, channels: Array.to_list(newChannels)}
-      setState(_=>newState);
-      newState;
-
+      Array.to_list(newChannels);
     } else {
-      msState;
+      channels;
     }
   };
 
   let formSubmit = (event) => {
+    
     ReactEvent.Form.preventDefault(event);
-    let newState = updateChannelCount(channelCount);
-    handleSubmit(_=>newState);
+    
+    // For Demo only: doing two things at once:
+    // - updating the state (if the channelCount changes)
+    // - calling handleSubmit.
+    
+    let newState = {
+        ...msState, 
+        channels: msState.channels |> updateChannels(channelCount) };
+    if (newState != originalState || newState.channels != originalState.channels){
+      showModalMessage(
+        "Really update?",
+        ~shown=true,
+        ~callBackOk=(message) => {
+          Js.log(message);
+          setState(_=>newState);
+          setOriginalState(_=>newState);   
+          handleSubmit(newState);
+        },
+        ~callBackCancel=(message) => {
+          Js.log2("Cancel bail out!...", message);
+          setState(_=>originalState);
+          setChannelCount(_=>List.length(originalState.channels));
+        },
+      );
+    } else {
+      setState(_=>newState);    
+      handleSubmit(newState);
+    }
+
+    // setState(_=>newState);    
+    // handleSubmit(newState);
+
   };
 
   let addChannel = (event) => {
+    
     ReactEvent.Synthetic.preventDefault(event);
+    
     let maxOrdinal = msState.channels 
-      |> List.fold_left((max,channel) => channel.ordinal>max ? channel.ordinal : max, 0);
+      |> List.fold_left(
+        (max,channel) => channel.ordinal>max ? channel.ordinal : max, 0);
     let newState = {
       ...msState, channels: msState.channels 
         @ [{ ordinal: maxOrdinal+1, filter: "Test-" ++ string_of_int(maxOrdinal+1)}]
@@ -100,36 +107,62 @@ let make = (~initialState: microscope, ~handleSubmit )=> {
   };
 
   let removeChannel = (ordinal) => {
+    
     let newState = {
-      ...msState, channels: msState.channels |> List.filter(channel=>channel.ordinal!=ordinal)
+      ...msState, 
+      channels: msState.channels 
+        |> List.filter(channel=>channel.ordinal!=ordinal)
     };
     setState(_=>newState);
     setChannelCount(_=>List.length(newState.channels));
   };
-
+  
   let updateValue = (field, event) => {
-    // Note: must cache the value because setState will run async to event
+    
+    // Note: cache value as setState will run async
     let value = event->getValue;
-    setState( _ => switch(field) {
-        | Name => { ...msState, name: value } 
+    
+    let newState = switch(field) {
+        | Name => {
+          // TODO: warn before updating with the default value from mapping
+          Belt.Map.String.getExn(microscopeMap, value)
+        }
         | Mag => { ...msState, magnification: value }
-      } 
-    );
+      };
+    setState(_=>newState);
+    setChannelCount(_=>List.length(newState.channels));
   };
 
+  let microscopeOptions = microscopes => {
+    
+    microscopes
+    |> List.map( microscope =>{
+      <option key=("ms-"++microscope.name) 
+        value=microscope.name >(str(microscope.name))</option>
+    })
+    |> Array.of_list
+    |> ReasonReact.array;
+  };
+  
   <div>
-    <form className="data_list_form" onSubmit=(e=>formSubmit(e)) >
+    <form className="data_list_form" onSubmit=formSubmit >
       <label htmlFor="name">(str("Name"))</label>
-      <input id="name" value={msState.name}
+      <select id="name" style=(
+          ReactDOMRe.Style.make(~height="21px", ()))
+        className="mdc-select" 
+        value={msState.name}
         onChange=updateValue(Name)
-      />
+      >
+        (microscopeOptions(storedMicroscopes))
+      </select>
       <label htmlFor="channels">(str("Channels:"))</label>
-      <input id="channels" value=string_of_int(channelCount) onChange=(e=>setChannelCount(e->getValue)) />
+      <input id="channels" value=string_of_int(channelCount) 
+        onChange=(e=>setChannelCount(e->getValue)) />
       <label htmlFor="mag" >(str("Magnification:"))</label>
       <input id="mag" value={msState.magnification} 
         onChange=updateValue(Mag)
       />
-      <button type_="submit"  className="mdc-button mdc-button--raised mdc-button--dense" >(str("submit"))</button>
+      <button type_="submit" className="mdc-button mdc-button--raised mdc-button--dense" >(str("submit"))</button>
     </form>
     <hr />
     <ChannelForm channels={msState.channels} removeChannel />
@@ -139,4 +172,4 @@ let make = (~initialState: microscope, ~handleSubmit )=> {
       <span className="mdc-button__label">(str("Add"))</span>
     </button>
   </div>
-}
+};

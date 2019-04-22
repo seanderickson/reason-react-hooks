@@ -15,34 +15,7 @@ form {
   border: 1px solid #c1c1c1;
   /* margin: 2rem auto 0 auto; */
   /* max-width: 600px; */
-  padding: 1em;
   justify-items: start;
-}
-form input {
-  background: #fff;
-  border: 1px solid #9c9c9c;
-}
-form button {
-  background: lightgrey;
-  padding: 0.7em;
-  width: 10em;
-  border: 0;
-}
-form button:hover {
-  background: darkcyan;
-}
-
-label {
-  padding: 0.5em 0.5em 0.5em 0;
-}
-
-input {
-  padding: 0.7em;
-  width: 100%;
-  margin-bottom: 0.5rem;
-}
-input:focus {
-  outline: 3px solid lightblue;
 }
 
 @media (min-width: 300px) {

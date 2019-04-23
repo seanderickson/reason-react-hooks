@@ -44,6 +44,9 @@ type route =
 //   channels
 // };
 
+type modalAction = 
+  Hide | Show(string, (string)=>unit, (string)=>unit);
+
 type modalState = {
   shown: bool,
   message: string,
@@ -119,3 +122,26 @@ let msPairs =
 
 let microscopeMap = msPairs -> BMS.fromArray; 
 
+
+// type context = Foo | Bar;
+// type contextFun = (context) => context;
+// let context = React.createContext(Foo);
+
+// module ContextProvider = {
+//   let make = context->React.Context.provider;
+
+//   [@bs.obj]
+//   external makeProps:
+//     (
+//       ~value: context,
+//       ~children: React.element,
+//       ~key: string=?,
+//       unit,
+//     ) =>
+//     {
+//       .
+//       "value": context,
+//       "children": React.element,
+//     } =
+//     "";
+// };

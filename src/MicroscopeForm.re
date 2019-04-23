@@ -8,18 +8,14 @@ type formField =
 
 let getValue = event => ReactEvent.Form.target(event)##value;
 
-// let lens = [
-//   (`name, s=> s.name, (s, name) => {...s, name}),
-//   (`channels, s=> s.channels, (s, channels) => {...s, channels})
-// ];
-
 [@react.component]
-let make = (~initialState: microscope, ~handleSubmit, ~showModalMessage )=>{
+let make = (~initialState: microscope, ~handleSubmit, ~dispatchModal )=>{
 
   let (msState, setState) = React.useState(()=>initialState);
   let (originalState, setOriginalState) = React.useState(_=>initialState);
   let (channelCount, setChannelCount) = React.useState(()=>List.length(msState.channels));
 
+  
   let updateChannels = (newCount, channels) => {
 
     let currLen = List.length(channels);
@@ -66,20 +62,21 @@ let make = (~initialState: microscope, ~handleSubmit, ~showModalMessage )=>{
         ...msState, 
         channels: msState.channels |> updateChannels(channelCount) };
     if (newState != originalState || newState.channels != originalState.channels){
-      showModalMessage(
-        "Really update?",
-        ~shown=true,
-        ~callBackOk=(message) => {
-          Js.log(message);
-          setState(_=>newState);
-          setOriginalState(_=>newState);   
-          handleSubmit(newState);
-        },
-        ~callBackCancel=(message) => {
-          Js.log2("Cancel bail out!...", message);
-          setState(_=>originalState);
-          setChannelCount(_=>List.length(originalState.channels));
-        },
+      dispatchModal( 
+        Show("Really update?",
+          (message) => {
+            dispatchModal(Hide);
+            Js.log(message);
+            setState(_=>newState);
+            setOriginalState(_=>newState);   
+            handleSubmit(newState);
+          },
+          (message) => {
+            Js.log2("Cancel bail out!...", message);
+            dispatchModal(Hide);
+            setState(_=>originalState);
+            setChannelCount(_=>List.length(originalState.channels));
+          })
       );
     } else {
       setState(_=>newState);    
@@ -133,7 +130,7 @@ let make = (~initialState: microscope, ~handleSubmit, ~showModalMessage )=>{
     setChannelCount(_=>List.length(newState.channels));
   };
 
-  let microscopeOptions = microscopes => {
+  let printMicroscopeOptions = microscopes => {
     
     microscopes
     |> List.map( microscope =>{
@@ -153,7 +150,7 @@ let make = (~initialState: microscope, ~handleSubmit, ~showModalMessage )=>{
         value={msState.name}
         onChange=updateValue(Name)
       >
-        (microscopeOptions(storedMicroscopes))
+        (printMicroscopeOptions(storedMicroscopes))
       </select>
       <label htmlFor="channels">(str("Channels:"))</label>
       <input id="channels" value=string_of_int(channelCount) 

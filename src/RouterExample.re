@@ -50,49 +50,72 @@ let make = () => {
   let (msState, setMsState) = React.useState(
     ()=>initialMsState);
 
-  let (modalState, setModalState) = React.useState(()=>{
-      callBackOk: (message) => {Js.log(message);},
-      callBackCancel: (message) => {Js.log(message);},
-      shown: false,
-      message: "",
-    });
+  // let (modalState, setModalState) = React.useState(()=>{
+  //     callBackOk: (_)=>(),
+  //     callBackCancel: (_)=>(),
+  //     shown: false,
+  //     message: "",
+  //   });
 
-  let showModalMessage = (message, ~shown, ~callBackOk, ~callBackCancel)  => {
+  let (modalState, dispatchModal) = React.useReducer(
+    (state, action)=>
+      switch(action) {
+        | Hide => { ...state, shown: false}
+        | Show(message, callBackOk, callBackCancel) =>
+            { message, shown: true, callBackOk, callBackCancel }
+      },
+      {
+        message: "", shown: false, 
+        callBackOk: (_)=>(), callBackCancel: (_)=>()
+      }
+  );
 
-    let finalCancel = (message) => {
-      setModalState(_=>{...modalState, shown: false});
-      Js.log("parent cancel...");
-      callBackCancel(message);
-    };
-    let finalOk = (message) => {
-      setModalState(_=>{...modalState, shown: false});
-      Js.log("parent ok...");
-      callBackOk(message);
-    };
+  // let showModalMessage = (message, ~shown, ~callBackOk, ~callBackCancel)  => {
 
-    setModalState(_=>{
-      message: message,
-      shown: shown,
-      callBackCancel: finalCancel,
-      callBackOk: finalOk
-    });
+  //   let finalCancel = (message) => {
+  //     setModalState(_=>{...modalState, shown: false});
+  //     Js.log("parent cancel...");
+  //     callBackCancel(message);
+  //   };
+  //   let finalOk = (message) => {
+  //     setModalState(_=>{...modalState, shown: false});
+  //     Js.log("parent ok...");
+  //     callBackOk(message);
+  //   };
 
-  };
+  //   setModalState(_=>{
+  //     message: message,
+  //     shown: shown,
+  //     callBackCancel: finalCancel,
+  //     callBackOk: finalOk
+  //   });
+
+  // };
 
   let toggleModal = event => {
     // This is an example only!
     ReactEvent.Synthetic.preventDefault(event);
-    showModalMessage(
-      "Test",
-      ~shown=!modalState.shown,
-      ~callBackOk=(msg)=>{
-        Js.log2("Callback ok: ", msg);
-      }, 
-      ~callBackCancel=(msg)=>{
-        Js.log2("Callback cancel:", msg);
-        setModalState(_=>{...modalState, shown: false});
-      }
-    );
+    dispatchModal(
+      Show("Test message!",
+        (msg)=>{
+          Js.log2("Test callBackOk", msg);
+          dispatchModal(Hide);
+        },
+        (msg)=>{
+          Js.log2("Test callBackCancel", msg);
+          dispatchModal(Hide);
+        })
+      );
+    // showModalMessage(
+    //   "Test message!",
+    //   ~shown=!modalState.shown,
+    //   ~callBackOk=(msg)=>{
+    //     Js.log2("Callback ok: ", msg);
+    //   }, 
+    //   ~callBackCancel=(msg)=>{
+    //     Js.log2("Callback cancel:", msg);
+    //   }
+    // );
   };
 
   let handleMsUpdate = (newMsState) => {
@@ -126,6 +149,7 @@ let make = () => {
     // Some(() => ReasonReactRouter.unwatchUrl(watcherId));
   });
 
+
   <div >
     <div>(str("Project Name: " ++ projectState.projectName))</div>
     <Modal 
@@ -158,7 +182,7 @@ let make = () => {
               handleSubmit=handleMsUpdate
               key="ms_form"
               initialState=msState
-              showModalMessage />
+              dispatchModal />
           // | Planned =>
           //   <SimpleForm 
           //     handleSubmit

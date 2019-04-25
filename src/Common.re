@@ -45,7 +45,10 @@ type route =
 // };
 
 type modalAction = 
-  Hide | Show(string, (string)=>unit, (string)=>unit);
+  Hide 
+  | Show(string, (string)=>unit, (string)=>unit)
+  | ModalCancel
+  | ModalOk;
 
 type modalState = {
   shown: bool,

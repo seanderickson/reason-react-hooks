@@ -1,4 +1,3 @@
-
 open Common
 
 type formField = 
@@ -15,7 +14,6 @@ let make = (~initialState: microscope, ~handleSubmit, ~dispatchModal )=>{
   let (originalState, setOriginalState) = React.useState(_=>initialState);
   let (channelCount, setChannelCount) = React.useState(()=>List.length(msState.channels));
 
-  
   let updateChannels = (newCount, channels) => {
 
     let currLen = List.length(channels);
@@ -69,7 +67,7 @@ let make = (~initialState: microscope, ~handleSubmit, ~dispatchModal )=>{
             Js.log(message);
             setState(_=>newState);
             setOriginalState(_=>newState);   
-            handleSubmit(newState);
+            handleSubmit(_=>newState);
           },
           (message) => {
             Js.log2("Cancel bail out!...", message);
@@ -80,12 +78,8 @@ let make = (~initialState: microscope, ~handleSubmit, ~dispatchModal )=>{
       );
     } else {
       setState(_=>newState);    
-      handleSubmit(newState);
+      handleSubmit(_=>newState);
     }
-
-    // setState(_=>newState);    
-    // handleSubmit(newState);
-
   };
 
   let addChannel = (event) => {

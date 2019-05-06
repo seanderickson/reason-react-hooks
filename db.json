@@ -1,0 +1,33 @@
+{
+  "irb": [
+    { "id": 1, "irb_number": "IRB-123456" },
+    { "id": 2, "irb_number": "IRB-123457" },
+    { "id": 3, "irb_number": "IRB-123458" },
+    { "id": 5, "irb_number": "IRB-555555" },
+    { "id": 4, "irb_number": "IRB-123459" }
+  ],
+  "sample": [
+    { "id": 1, "body": "some comment", "postId": 1 },
+    { "id": 2, "body": "some comment", "postId": 1 }
+  ],
+  "project": [
+    { "id": 1, "name": "Project 1" },
+    { "id": 2, "name": "Project 2" },
+    { "id": 3, "name": "Project 3" },
+    { "id": 4, "name": "Project 4" }
+  ],
+  "experiment": [
+    { "id": 1, "name": "Experiment 1" },
+    { "id": 2, "name": "Experiment 2" }
+  ],
+  "user": [
+    { "id": 1, "first_name": "Sally",  "last_name": "Smith" },
+    { "id": 2, "first_name": "Joe",  "last_name": "Smith" },
+    { "id": 3, "first_name": "Jane",  "last_name": "Doe" },
+    { "id": 4, "first_name": "John",  "last_name": "Doe" },
+    { "id": 5, "first_name": "Betty",  "last_name": "Jones" },
+    { "id": 6, "first_name": "Bob",  "last_name": "Jones" },
+    { "id": 7, "first_name": "Fiona",  "last_name": "Miller" },
+    { "id": 8, "first_name": "Fred",  "last_name": "Miller" }
+  ]
+}
